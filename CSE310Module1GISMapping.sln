@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32014.148
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CSE310Module1GISMapping", "CSE310Module1GISMapping\CSE310Module1GISMapping.csproj", "{78C3CF51-75F2-4910-BA66-151AFC74165B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{78C3CF51-75F2-4910-BA66-151AFC74165B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{78C3CF51-75F2-4910-BA66-151AFC74165B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{78C3CF51-75F2-4910-BA66-151AFC74165B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{78C3CF51-75F2-4910-BA66-151AFC74165B}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {359CE16B-3A82-4F7B-9B44-763CD7268FA5}
+	EndGlobalSection
+EndGlobal
