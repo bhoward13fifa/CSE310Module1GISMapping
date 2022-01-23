@@ -16,9 +16,10 @@
             <RowDefinition Height="*" />
             <RowDefinition Height="*" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <esri:MapView x:Name="MyMapView"
-                      Grid.RowSpan="3"/>
+                      Grid.RowSpan="4"/>
 
         <Button x:Name="AddFeature" Content="Add Feature"
                 Click="AddFeature_Click"
@@ -26,9 +27,126 @@
         <Button x:Name="EditFeature" Content="Edit Feature"
                 Click="EditFeature_Click"
                 Grid.Column="2" Grid.Row="1"/>
+        <Button x:Name="ViewFeature" Content="View Feature"
+                Click="ViewFeature_Click"
+                Grid.Column="2" Grid.Row="2"/>
         <Button x:Name="DeleteFeature" Content="Delete Feature"
                 Click="DeleteFeature_Click"
-                Grid.Column="2" Grid.Row="2"/>
+                Grid.Column="2" Grid.Row="3"/>
+        <!--View Border-->
+        <Border
+            x:Name="ViewBorder"
+            Visibility="Collapsed"
+            Background="White"
+            IsEnabled="False" Margin="30,30,30,30" Grid.RowSpan="3">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Label
+                    Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+                    HorizontalAlignment="Center"
+                    Content="Feature Attributes" />
+                <Label
+                    Grid.Row="1" Grid.Column="0"
+                    Content="Feature Id" />
+                <TextBlock x:Name="ViewId"
+                    Grid.Row="1" Grid.Column="1"
+                    Margin="5" />
+                <Label
+                    Grid.Row="2" Grid.Column="0"
+                    Content="Last Edit" />
+                <TextBlock x:Name="EditDate"
+                    Grid.Row="1" Grid.Column="1"
+                    Margin="5" />
+                <Label
+                    Grid.Row="3" Grid.Column="0"
+                    Content="Property Name" />
+                <TextBlock x:Name="viewPropertyName"
+                    Grid.Row="3" Grid.Column="1"
+                    Margin="5" />
+                <Label
+                    Grid.Row="4" Grid.Column="0"
+                    Content="Evaluator Name" />
+                <TextBlock x:Name="viewEvaluatorName"
+                    Grid.Row="4" Grid.Column="1"
+                    Margin="5" />
+                <Label
+                    Grid.Row="5" Grid.Column="0"
+                    Content="Desrciption" />
+                <TextBlock x:Name="viewDescription"
+                    Grid.Row="5" Grid.Column="1"
+                    Margin="5" />
+                <Button
+                    Grid.Row="6" Grid.ColumnSpan="2"
+                    Margin="5"
+                    Padding="5"
+                    Click="ViewOk_Click" Content="OK"/>
+            </Grid>
+        </Border>
+        <!--Add Border-->
+        <Border
+            x:Name="AddBorder"
+            Visibility="Collapsed"
+            Background="White"
+            IsEnabled="False" Margin="30,30,30,30" Grid.RowSpan="3">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="Auto" />
+                </Grid.RowDefinitions>
+                <Label
+                    Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+                    HorizontalAlignment="Center"
+                    Content="Add Feature Attributes" />
+                <Label
+                    Grid.Row="1" Grid.Column="0"
+                    Content="Property Name" />
+                <TextBox
+                    x:Name="NewPropertyNameBox"
+                    Grid.Row="1" Grid.Column="1"
+                    Margin="5" />
+                <Label
+                    Grid.Row="2" Grid.Column="0"
+                    Content="Evaluator Name" />
+                <TextBox
+                    x:Name="NewEvaluatorNameBox"
+                    Grid.Row="2" Grid.Column="1"
+                    Margin="5" />
+                <Label
+                    Grid.Row="3" Grid.Column="0"
+                    Content="Desrciption" />
+                <TextBox
+                    x:Name="NewDescriptionBox"
+                    Grid.Row="3" Grid.Column="1"
+                    Margin="5" />
+                <Button
+                    Grid.Row="4" Grid.Column="0"
+                    Margin="5" HorizontalAlignment="Stretch"
+                    Click="AddCancel_Click" Content="Cancel"/>
+                <Button
+                    Grid.Row="4" Grid.Column="1"
+                    Margin="5"
+                    Click="AddOk_Click" Content="OK"/>
+            </Grid>
+        </Border>
         <!--Edit Border-->
         <Border
             x:Name="EditBorder"
@@ -56,21 +174,21 @@
                     Content="Edit Feature Attributes and Attachments" />
                 <Label
                     Grid.Row="1" Grid.Column="0"
-                    Content="property_name" />
+                    Content="Property Name" />
                 <TextBox
                     x:Name="PropertyNameBox"
                     Grid.Row="1" Grid.Column="1"
                     Margin="5" />
                 <Label
                     Grid.Row="2" Grid.Column="0"
-                    Content="evaluator_name" />
+                    Content="Evaluator Name" />
                 <TextBox
                     x:Name="EvaluatorNameBox"
                     Grid.Row="2" Grid.Column="1"
                     Margin="5" />
                 <Label
                     Grid.Row="3" Grid.Column="0"
-                    Content="description" />
+                    Content="Description" />
                 <TextBox
                     x:Name="DescriptionBox"
                     Grid.Row="3" Grid.Column="1"

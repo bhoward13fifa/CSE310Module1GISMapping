@@ -71,9 +71,8 @@ namespace CSE310Module1GISMapping
                     MapPoint tappedPoint = (MapPoint)GeometryEngine.NormalizeCentralMeridian(e.Location);
                     feature.Geometry = tappedPoint;
 
-                    feature.Attributes["property_name"] = "New Property";
-                    feature.Attributes["evaluator_name"] = "New Evaluator";
-                    feature.Attributes["description"] = "New Description";
+                    AddBorder.Visibility = Visibility.Visible;
+                    AddBorder.IsEnabled = true;
 
                     await _serviceFeatureTable.AddFeatureAsync(feature);
 
@@ -129,6 +128,44 @@ namespace CSE310Module1GISMapping
                     AttachmentsListBox.ItemsSource = attachments.Where(attachment => attachment.ContentType == "image/jpeg");
                     AttachmentsListBox.IsEnabled = true;
                     AddAttachmentButton.IsEnabled = true;
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.ToString(), "Error loading feature");
+                }
+            }
+        }
+
+        // Allows the user to select a feature and view it's attributes and attachments
+        private void ViewFeature_Click(object sender, RoutedEventArgs e)
+        {
+            MyMapView.GeoViewTapped += MapView_Tapped;
+
+            async void MapView_Tapped(object sender, GeoViewInputEventArgs e)
+            {
+                _serviceLayer.ClearSelection();
+                _selectedFeature = null;
+
+                ViewBorder.Visibility = Visibility.Visible;
+                ViewBorder.IsEnabled = true;
+
+                try
+                {
+                    IdentifyLayerResult identifyResult = await MyMapView.IdentifyLayerAsync(_serviceLayer, e.Position, 2, false);
+
+                    if (!identifyResult.GeoElements.Any())
+                    {
+                        return;
+                    }
+
+                    ViewId = (TextBlock)identifyResult.GeoElements.First().Attributes["objectid"];
+                    EditDate = (TextBlock)identifyResult.GeoElements.First().Attributes["EditDate"];
+                    viewPropertyName = (TextBlock)identifyResult.GeoElements.First().Attributes["property_name"];
+                    viewEvaluatorName = (TextBlock)identifyResult.GeoElements.First().Attributes["evaluator_name"];
+                    viewDescription = (TextBlock)identifyResult.GeoElements.First().Attributes["description"];
+
+                    MessageBox.Show("Success!");
+
                 }
                 catch (Exception ex)
                 {
@@ -374,6 +411,51 @@ namespace CSE310Module1GISMapping
                 EditBorder.Visibility= Visibility.Collapsed;
                 EditBorder.IsEnabled = false;
             }
+        }
+
+        // Cancel Button on New Attributes PopUp Form
+        private void AddCancel_Click(object sender, RoutedEventArgs e)
+        {
+            MyMapView.IsEnabled = true;
+            AddBorder.Visibility = Visibility.Collapsed;
+            AddBorder.IsEnabled = false;
+        }
+
+        // Ok button to confirm new attributes being added
+        private async void AddOk_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                ArcGISFeature feature = (ArcGISFeature)_serviceFeatureTable.CreateFeature();
+
+                feature.Attributes["property_name"] = PropertyNameBox.Text;
+                feature.Attributes["evaluator_name"] = EvaluatorNameBox.Text;
+                feature.Attributes["description"] = DescriptionBox.Text;
+                await _serviceFeatureTable.AddFeatureAsync(feature);
+
+                await _serviceFeatureTable.ApplyEditsAsync();
+
+                feature.Refresh();
+
+                MessageBox.Show("Created feature " + feature.Attributes["objectid"], "Success!");
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "Error adding feature");
+            }
+            finally
+            {
+                MyMapView.IsEnabled = true;
+                EditBorder.Visibility = Visibility.Collapsed;
+                EditBorder.IsEnabled = false;
+            }
+        }
+
+        private void ViewOk_Click(object sender, RoutedEventArgs e)
+        {
+            MyMapView.IsEnabled = true;
+            ViewBorder.Visibility = Visibility.Collapsed;
+            ViewBorder.IsEnabled = false;
         }
     }
 }
