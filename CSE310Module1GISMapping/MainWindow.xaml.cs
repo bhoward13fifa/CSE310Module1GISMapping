@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -28,8 +31,16 @@ namespace CSE310Module1GISMapping
     /// will be able to add new features, edit current features,
     /// and delete current features.
     /// </summary>
-    public partial class MainWindow
+    public partial class MainWindow : INotifyPropertyChanged
     {
+
+        public MainWindow()
+        {
+            DataContext = this;
+            InitializeComponent();
+            Initialize();
+        }
+
         private ServiceFeatureTable _serviceFeatureTable;
 
         private FeatureLayer _serviceLayer;
@@ -38,10 +49,85 @@ namespace CSE310Module1GISMapping
 
         private const string FeatureServiceUrl = "https://services7.arcgis.com/OrD0y9T7jEt4KcV9/arcgis/rest/services/properties_in_need_of_repairs/FeatureServer/0";
 
-        public MainWindow()
+        private bool isAddToggled = false;
+
+        private bool isEditToggled = false;
+
+        private bool isViewToggled = false;
+
+        private bool isDeleteToggled = false;
+
+        private MapPoint _mapPoint;
+
+        private string _viewId = "";
+        private string _editDate = "";
+        private string _viewPropertyName = "";
+        private string _viewEvaluatorName = "";
+        private string _viewDescription = "";
+
+        public string ViewId
         {
-            InitializeComponent();
-            Initialize();
+            get { return _viewId; }
+            set 
+            { 
+                if (_viewId != value)
+                {
+                    _viewId = value;
+                    OnPropertyChanged();
+                }              
+            }
+        }
+
+        public string EditDate
+        {
+            get { return _editDate; }
+            set 
+            { 
+                if (value != _editDate)
+                {
+                    _editDate = value;
+                    OnPropertyChanged();
+                }               
+            }
+        }
+
+        public string ViewPropertyName
+        {
+            get { return _viewPropertyName; }
+            set 
+            { 
+                if (value != _viewPropertyName)
+                {
+                    _viewPropertyName = value;
+                    OnPropertyChanged();
+                }               
+            }
+        }
+        
+        public string ViewEvaluatorName
+        {
+            get { return _viewEvaluatorName; }
+            set 
+            { 
+                if (value != _viewEvaluatorName)
+                {
+                    _viewEvaluatorName = value;
+                    OnPropertyChanged();
+                }                
+            }
+        }
+
+        public string ViewDescription
+        {
+            get { return _viewDescription; }
+            set 
+            { 
+                if (value != _viewDescription)
+                {
+                    _viewDescription = value;
+                    OnPropertyChanged();
+                }               
+            }
         }
 
         //Intializes the basemap and pulls in the feature layer from my ArcGIS account
@@ -60,156 +146,166 @@ namespace CSE310Module1GISMapping
         // Allows the user to add a new feature by tapping on the desried location on the screen
         private void AddFeature_Click(object sender, RoutedEventArgs e)
         {
-            MyMapView.GeoViewTapped += MapView_Tapped;
-
-            async void MapView_Tapped(object sender, GeoViewInputEventArgs e)
+            if (!isAddToggled)
             {
-                try
-                {
-                    ArcGISFeature feature = (ArcGISFeature)_serviceFeatureTable.CreateFeature();
+                isAddToggled = true;
+                MyMapView.GeoViewTapped += MapView_Tapped;
 
-                    MapPoint tappedPoint = (MapPoint)GeometryEngine.NormalizeCentralMeridian(e.Location);
-                    feature.Geometry = tappedPoint;
+                    void MapView_Tapped(object sender, GeoViewInputEventArgs e)
+                    {
+                        try
+                        {
+                            MapPoint tappedPoint = (MapPoint)GeometryEngine.NormalizeCentralMeridian(e.Location);
 
-                    AddBorder.Visibility = Visibility.Visible;
-                    AddBorder.IsEnabled = true;
+                            AddBorder.Visibility = Visibility.Visible;
+                            AddBorder.IsEnabled = true;
 
-                    await _serviceFeatureTable.AddFeatureAsync(feature);
+                            _mapPoint = tappedPoint;
+                        }
 
-                    await _serviceFeatureTable.ApplyEditsAsync();
-
-                    feature.Refresh();
-
-                    MessageBox.Show("Created feature " + feature.Attributes["objectid"], "Success!");
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.ToString(), "Error adding feature");
-                }
-            }
-
+                        catch (Exception ex)
+                        {
+                            MessageBox.Show(ex.ToString(), "Error adding feature");
+                        }
+                    }
+            }           
         }
 
-        // Allows the user to select a feature and make edits to it's attributes and attachments
+            // Allows the user to select a feature and make edits to it's attributes and attachments
         private void EditFeature_Click(object sender, RoutedEventArgs e)
         {
-            MyMapView.GeoViewTapped += MapView_Tapped;
-
-            async void MapView_Tapped(object sender, GeoViewInputEventArgs e)
+            if (!isEditToggled)
             {
-                _serviceLayer.ClearSelection();
-                _selectedFeature = null;
+                isEditToggled = true;
+                MyMapView.GeoViewTapped += MapView_Tapped;
 
-                EditBorder.Visibility = Visibility.Visible;
-                EditBorder.IsEnabled = true;
-                AttachmentsListBox.IsEnabled = false;
-                AttachmentsListBox.ItemsSource = null;
-                AddAttachmentButton.IsEnabled = false;
-
-                try
+                async void MapView_Tapped(object sender, GeoViewInputEventArgs e)
                 {
-                    IdentifyLayerResult identifyResult = await MyMapView.IdentifyLayerAsync(_serviceLayer, e.Position, 2, false);
+                    _serviceLayer.ClearSelection();
+                    _selectedFeature = null;
 
-                    if (!identifyResult.GeoElements.Any())
+                    EditBorder.Visibility = Visibility.Visible;
+                    EditBorder.IsEnabled = true;
+                    AttachmentsListBox.IsEnabled = false;
+                    AttachmentsListBox.ItemsSource = null;
+                    AddAttachmentButton.IsEnabled = false;
+
+                    try
                     {
-                        return;
+                        IdentifyLayerResult identifyResult = await MyMapView.IdentifyLayerAsync(_serviceLayer, e.Position, 2, false);
+
+                        if (!identifyResult.GeoElements.Any())
+                        {
+                            return;
+                        }
+
+                        GeoElement tappedElement = identifyResult.GeoElements.First();
+                        ArcGISFeature tappedFeature = (ArcGISFeature)tappedElement;
+
+                        _serviceLayer.SelectFeature(tappedFeature);
+                        _selectedFeature = tappedFeature;
+
+                        await tappedFeature.LoadAsync();
+
+                        IReadOnlyList<Attachment> attachments = await tappedFeature.GetAttachmentsAsync();
+
+                        AttachmentsListBox.ItemsSource = attachments.Where(attachment => attachment.ContentType == "image/jpeg");
+                        AttachmentsListBox.IsEnabled = true;
+                        AddAttachmentButton.IsEnabled = true;
                     }
-
-                    GeoElement tappedElement = identifyResult.GeoElements.First();
-                    ArcGISFeature tappedFeature = (ArcGISFeature) tappedElement;
-
-                    _serviceLayer.SelectFeature(tappedFeature);
-                    _selectedFeature = tappedFeature;
-
-                    await tappedFeature.LoadAsync();
-
-                    IReadOnlyList<Attachment> attachments = await tappedFeature.GetAttachmentsAsync();
-
-                    AttachmentsListBox.ItemsSource = attachments.Where(attachment => attachment.ContentType == "image/jpeg");
-                    AttachmentsListBox.IsEnabled = true;
-                    AddAttachmentButton.IsEnabled = true;
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.ToString(), "Error loading feature");
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.ToString(), "Error loading feature");
+                    }
                 }
             }
+            
         }
 
         // Allows the user to select a feature and view it's attributes and attachments
         private void ViewFeature_Click(object sender, RoutedEventArgs e)
         {
-            MyMapView.GeoViewTapped += MapView_Tapped;
-
-            async void MapView_Tapped(object sender, GeoViewInputEventArgs e)
+            if (!isViewToggled)
             {
-                _serviceLayer.ClearSelection();
-                _selectedFeature = null;
+                isViewToggled = true;
+                MyMapView.GeoViewTapped += MapView_Tapped;
 
-                ViewBorder.Visibility = Visibility.Visible;
-                ViewBorder.IsEnabled = true;
-
-                try
+                async void MapView_Tapped(object sender, GeoViewInputEventArgs e)
                 {
-                    IdentifyLayerResult identifyResult = await MyMapView.IdentifyLayerAsync(_serviceLayer, e.Position, 2, false);
+                    _serviceLayer.ClearSelection();
+                    _selectedFeature = null;
 
-                    if (!identifyResult.GeoElements.Any())
+                    try
                     {
-                        return;
+                        IdentifyLayerResult identifyResult = await MyMapView.IdentifyLayerAsync(_serviceLayer, e.Position, 2, false);
+
+                        if (!identifyResult.GeoElements.Any())
+                        {
+                            return;
+                        }
+
+                        _viewId = identifyResult.GeoElements.First().Attributes["objectid"].ToString();
+                        _editDate = identifyResult.GeoElements.First().Attributes["EditDate"].ToString();
+                        _viewPropertyName = (string)identifyResult.GeoElements.First().Attributes["property_name"];
+                        _viewEvaluatorName = (string)identifyResult.GeoElements.First().Attributes["evaluator_name"];
+                        _viewDescription = (string)identifyResult.GeoElements.First().Attributes["description"];
+
+                        ViewBorder.Visibility = Visibility.Visible;
+                        ViewBorder.IsEnabled = true;
+
+                        MessageBox.Show("Success!");
+
                     }
-
-                    ViewId = (TextBlock)identifyResult.GeoElements.First().Attributes["objectid"];
-                    EditDate = (TextBlock)identifyResult.GeoElements.First().Attributes["EditDate"];
-                    viewPropertyName = (TextBlock)identifyResult.GeoElements.First().Attributes["property_name"];
-                    viewEvaluatorName = (TextBlock)identifyResult.GeoElements.First().Attributes["evaluator_name"];
-                    viewDescription = (TextBlock)identifyResult.GeoElements.First().Attributes["description"];
-
-                    MessageBox.Show("Success!");
-
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.ToString(), "Error loading feature");
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.ToString(), "Error loading feature");
+                    }
                 }
             }
+            
         }
 
         // Allows the user to delete features
         private void DeleteFeature_Click(object sender, RoutedEventArgs e)
         {
-            MyMapView.GeoViewTapped += MapView_Tapped;
-
-            async void MapView_Tapped(object sender, GeoViewInputEventArgs e)
+            if(!isDeleteToggled)
             {
-                _serviceLayer.ClearSelection();
+                isDeleteToggled = true;
+                MyMapView.GeoViewTapped += MapView_Tapped;
 
-                MyMapView.DismissCallout();
-
-                try
+                async void MapView_Tapped(object sender, GeoViewInputEventArgs e)
                 {
-                    IdentifyLayerResult identifyResult = await MyMapView.IdentifyLayerAsync(_serviceLayer, e.Position, 2, false);
+                    _serviceLayer.ClearSelection();
 
-                    if (!identifyResult.GeoElements.Any())
+                    MyMapView.DismissCallout();
+
+                    try
                     {
-                        return;
+                        IdentifyLayerResult identifyResult = await MyMapView.IdentifyLayerAsync(_serviceLayer, e.Position, 2, false);
+
+                        if (!identifyResult.GeoElements.Any())
+                        {
+                            return;
+                        }
+
+                        long featureId = (long)identifyResult.GeoElements.First().Attributes["objectid"];
+
+                        QueryParameters qp = new QueryParameters();
+                        qp.ObjectIds.Add(featureId);
+                        FeatureQueryResult queryResult = await _serviceLayer.FeatureTable.QueryFeaturesAsync(qp);
+                        Feature tappedFeature = queryResult.First();
+
+                        _serviceLayer.SelectFeature(tappedFeature);
+
+                        ShowDeletionCallout(tappedFeature);
                     }
-
-                    long featureId = (long)identifyResult.GeoElements.First().Attributes["objectid"];
-
-                    QueryParameters qp = new QueryParameters();
-                    qp.ObjectIds.Add(featureId);
-                    FeatureQueryResult queryResult = await _serviceLayer.FeatureTable.QueryFeaturesAsync(qp);
-                    Feature tappedFeature = queryResult.First();
-
-                    _serviceLayer.SelectFeature(tappedFeature);
-
-                    ShowDeletionCallout(tappedFeature);
-                }
-                catch(Exception ex)
-                {
-                    MessageBox.Show(ex.ToString(), "There was a problem");
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.ToString(), "There was a problem");
+                    }
                 }
             }
+            
         }
 
         // Shows another button to confirm deletion
@@ -428,6 +524,8 @@ namespace CSE310Module1GISMapping
             {
                 ArcGISFeature feature = (ArcGISFeature)_serviceFeatureTable.CreateFeature();
 
+                feature.Geometry = _mapPoint;
+
                 feature.Attributes["property_name"] = PropertyNameBox.Text;
                 feature.Attributes["evaluator_name"] = EvaluatorNameBox.Text;
                 feature.Attributes["description"] = DescriptionBox.Text;
@@ -446,8 +544,8 @@ namespace CSE310Module1GISMapping
             finally
             {
                 MyMapView.IsEnabled = true;
-                EditBorder.Visibility = Visibility.Collapsed;
-                EditBorder.IsEnabled = false;
+                AddBorder.Visibility = Visibility.Collapsed;
+                AddBorder.IsEnabled = false;
             }
         }
 
@@ -456,6 +554,12 @@ namespace CSE310Module1GISMapping
             MyMapView.IsEnabled = true;
             ViewBorder.Visibility = Visibility.Collapsed;
             ViewBorder.IsEnabled = false;
+        }
+
+        public event PropertyChangedEventHandler PropertyChanged;
+        private void OnPropertyChanged([CallerMemberName] string propertyName = null)
+        {
+            PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
         }
     }
 }

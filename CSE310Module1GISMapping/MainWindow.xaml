@@ -60,32 +60,37 @@
                 <Label
                     Grid.Row="1" Grid.Column="0"
                     Content="Feature Id" />
-                <TextBlock x:Name="ViewId"
+                <TextBlock
                     Grid.Row="1" Grid.Column="1"
+                    Text="{Binding Path=ViewId}"
                     Margin="5" />
                 <Label
                     Grid.Row="2" Grid.Column="0"
                     Content="Last Edit" />
-                <TextBlock x:Name="EditDate"
+                <TextBlock
                     Grid.Row="1" Grid.Column="1"
+                    Text="{Binding Path=EditDate}"
                     Margin="5" />
                 <Label
                     Grid.Row="3" Grid.Column="0"
                     Content="Property Name" />
-                <TextBlock x:Name="viewPropertyName"
+                <TextBlock
                     Grid.Row="3" Grid.Column="1"
+                    Text="{Binding Path=ViewPropertyName}"
                     Margin="5" />
                 <Label
                     Grid.Row="4" Grid.Column="0"
                     Content="Evaluator Name" />
-                <TextBlock x:Name="viewEvaluatorName"
+                <TextBlock
                     Grid.Row="4" Grid.Column="1"
+                    Text="{Binding Path=ViewEvaluatorName}"
                     Margin="5" />
                 <Label
                     Grid.Row="5" Grid.Column="0"
                     Content="Desrciption" />
-                <TextBlock x:Name="viewDescription"
+                <TextBlock
                     Grid.Row="5" Grid.Column="1"
+                    Text="{Binding Path=ViewDescription}"
                     Margin="5" />
                 <Button
                     Grid.Row="6" Grid.ColumnSpan="2"
